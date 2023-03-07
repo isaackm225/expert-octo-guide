@@ -148,6 +148,7 @@ class WebBot:
             location.send_keys(data_stuff.ZIP)
             location.send_keys(Keys.ENTER)
 
+
             time.sleep(randint(1,5))
             price_field = driver.find_element(By.ID, "PriceAmount")
             price_field.send_keys(data_stuff.PRICES[randint(0,len(data_stuff.PRICES)-1)])

@@ -7,7 +7,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import *
 from selenium.webdriver.common.proxy import *
-from random import randint
+from random import randint, choice
 import data_stuff
 import test_api
 
@@ -59,7 +59,7 @@ class WebBot:
             time.sleep(randint(1,5))
             pass2.send_keys(Keys.RETURN)
 
-    def verify_and_create_ad(self,url,title):
+    def verify_and_create_ad(self,url,title,b):
         with uc.Chrome() as driver:
             wait = WebDriverWait(driver, timeout=10, poll_frequency=1, ignored_exceptions=[ElementNotVisibleException,ElementNotSelectableException,NoSuchElementException])
             driver.get(url)
@@ -71,17 +71,98 @@ class WebBot:
             ad_title.send_keys(title)
             time.sleep(randint(1,5))
             ad_title.send_keys(Keys.RETURN)
-            cat_btn1 = wait.until(EC.element_to_be_clickable((By.XPATH,"/html/body/div[3]/div[2]/div/div/div/div[2]/div/div/div[2]/div[2]/div/ul/li[1]/button")))
             time.sleep(randint(1,5))
-            cat_btn1.click()
-            cat_btn2 = wait.until(EC.element_to_be_clickable((By.XPATH,"/html/body/div[3]/div[2]/div/div/div/div[2]/div/div/div[2]/div[2]/div/ul[2]/li[14]/button")))
-            time.sleep(randint(1,5))
-            cat_btn2.click()
-            cat_btn3 = wait.until(EC.element_to_be_clickable((By.XPATH,"/html/body/div[3]/div[2]/div/div/div/div[2]/div/div/div[2]/div[2]/div/ul[2]/li[1]/button")))
-            time.sleep(randint(1,5))
-            cat_btn3.click()   
 
-              
+            btns = driver.find_elements(By.TAG_NAME,"button")
+            for btn in btns:
+                if btn.text == 'Buy & Sell':
+                    btn.click()
+                    break
+            
+            time.sleep(5)
+            btns = driver.find_elements(By.TAG_NAME,"button")
+            for btn in btns:
+                if btn.text == 'Furniture':
+                    btn.click()
+                    break
+                
+            time.sleep(5)
+            btns = driver.find_elements(By.TAG_NAME,"button")
+            for btn in btns:
+                if btn.text == 'Beds & Mattresses':
+                    btn.click()
+                    break
+            
+            time.sleep(5)
+            if wait.until(EC.element_to_be_clickable((By.CLASS_NAME, "select-location"))):
+                ontario2_lnk = driver.find_element(By.PARTIAL_LINK_TEXT, "Ontario (M - Z)")
+                ontario2_lnk.click()
+                time.sleep(5)
+                ottawa1_lnk = driver.find_element(By.PARTIAL_LINK_TEXT, "Ottawa")
+                ottawa1_lnk.click()
+                time.sleep(5)
+                ottawa2_lnk = driver.find_element(By.LINK_TEXT, "Ottawa")
+                ottawa2_lnk.click()
+                time.sleep(5)
+                go_btn = driver.find_element(By.ID,"LocUpdate")
+                go_btn.click()
+            
+            time.sleep(randint(1,5))
+            chkboxs = driver.find_elements(By.TAG_NAME,"label")
+            for chkbox in chkboxs:
+                if chkbox.text == "Business" and b:
+                    chkbox.click()
+                if chkbox.text == "Willing to drop-off / deliver":
+                    chkbox.click()
+                if chkbox.text == "Willing to ship the item":
+                    chkbox.click()
+                if chkbox.text == "Offer curbside pick up":
+                    chkbox.click()
+                if chkbox.text == "Offer cashless payment":
+                    chkbox.click()
+                if chkbox.text == "Cash accepted":
+                    chkbox.click()
+            
+            #select_elem = driver.find_element(By.ID, "condition_s")
+
+                     
+
+            time.sleep(randint(1,5))
+            txt_area = driver.find_element(By.ID, 'pstad-descrptn')
+            txt_area.send_keys(data_stuff.DESCRIPTIONS[randint(0,len(data_stuff.DESCRIPTIONS))])
+
+            #time.sleep(randint(1,5))
+            #tag_tfield = driver.find_element(By.XPATH, '//*[@id="pstad-tagsInput"]')
+            #for i in range(0,5):
+            #    tag_tfield.send_keys(data_stuff.TAGS[randint(0,len(data_stuff.TAGS))])
+            #tag_tfield.send_keys(Keys.ENTER)
+
+            time.sleep(randint(1,5))
+            img_fields = driver.find_elements(By.TAG_NAME, "input")
+            for img_field in img_fields:
+                if img_field.get_attribute('type') == "file":
+                    img_field.send_keys(r"D:\WhatsApp Image 2023-03-07 at 10.17.38 AM (1).jpeg")
+
+            time.sleep(randint(1,5))
+            location = driver.find_element(By.ID, "location")
+            location.send_keys(data_stuff.ZIP)
+            location.send_keys(Keys.ENTER)
+
+            time.sleep(randint(1,5))
+            price_field = driver.find_element(By.ID, "PriceAmount")
+            price_field.send_keys(data_stuff.PRICES[randint(0,len(data_stuff.PRICES)-1)])
+
+            time.sleep(randint(1,5))
+            phone_field = driver.find_element(By.ID, "PhoneNumber")
+            phone_field.send_keys(choice(data_stuff.PHONES))
+
+            btns = driver.find_elements(By.TAG_NAME, "button")
+            for btn in btns:
+                if btn.text == "Post Your Ad":
+                    btn.click()
+
+            print("Done!")
+            time.sleep(50)
 
 
 if __name__=="__main__":
@@ -93,9 +174,11 @@ if __name__=="__main__":
     email,t = eb.get()
     wb.create_account(name,email,pword)
     mid = eb.check(email,t)
-    print(mid)
+    business = bool(randint(0,1))
+    data_stuff.log(name,email,t,pword,business)
     if mid:
         time.sleep(randint(1,10))
         url = eb.read(email,mid)
         title = data_stuff.TITLE[randint(0,len(data_stuff.TITLE)-1)]
-        wb.verify_and_create_ad(url, title)
+        wb.verify_and_create_ad(url, title,business)
+

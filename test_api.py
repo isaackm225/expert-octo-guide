@@ -22,14 +22,6 @@ class Email_Bot():
 			cred = data['items'] #credentials
 			email = cred['email']
 			timestamp = cred['timestamp']
-			try:
-				with open("creds.csv","x") as f:
-					sheet = csv.writer(f)
-					sheet.writerow([email,timestamp])#email,t
-			except:
-				with open("creds.csv","a") as f:
-					sheet = csv.writer(f)
-					sheet.writerow([email,timestamp])#email,t
 			return email,timestamp	
 		else:
 			raise Exception(f"Request failed generating email. Code: {data['code']}")
@@ -82,5 +74,4 @@ if __name__=="__main__":
 	mid = b.check(email,t)
 	if mid:
 		txt = b.read(email,mid)
-
 		print(txt)

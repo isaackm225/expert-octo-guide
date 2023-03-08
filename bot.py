@@ -10,6 +10,8 @@ from selenium.webdriver.common.proxy import *
 from random import randint, choice
 import data_stuff
 import test_api
+from selenium.webdriver.common.action_chains import ActionChains
+import os
 
 class WebBot:
     def __init__(self) -> None:
@@ -61,7 +63,7 @@ class WebBot:
 
     def verify_and_create_ad(self,url,title,b):
         with uc.Chrome() as driver:
-            wait = WebDriverWait(driver, timeout=10, poll_frequency=1, ignored_exceptions=[ElementNotVisibleException,ElementNotSelectableException,NoSuchElementException])
+            wait = WebDriverWait(driver, timeout=10, poll_frequency=1, ignored_exceptions=[ElementNotVisibleException,ElementNotSelectableException,NoSuchElementException,TimeoutException])
             driver.get(url)
             post_ad =  wait.until(EC.element_to_be_clickable((By.LINK_TEXT,"Post ad")))
             time.sleep(randint(1,5))
@@ -94,19 +96,21 @@ class WebBot:
                     break
             
             time.sleep(5)
-            if wait.until(EC.element_to_be_clickable((By.CLASS_NAME, "select-location"))):
-                ontario2_lnk = driver.find_element(By.PARTIAL_LINK_TEXT, "Ontario (M - Z)")
-                ontario2_lnk.click()
-                time.sleep(5)
-                ottawa1_lnk = driver.find_element(By.PARTIAL_LINK_TEXT, "Ottawa")
-                ottawa1_lnk.click()
-                time.sleep(5)
-                ottawa2_lnk = driver.find_element(By.LINK_TEXT, "Ottawa")
-                ottawa2_lnk.click()
-                time.sleep(5)
-                go_btn = driver.find_element(By.ID,"LocUpdate")
-                go_btn.click()
-            
+            try:
+                if wait.until(EC.element_to_be_clickable((By.CLASS_NAME, "select-location"))):
+                    ontario2_lnk = driver.find_element(By.PARTIAL_LINK_TEXT, "Ontario (M - Z)")
+                    ontario2_lnk.click()
+                    time.sleep(5)
+                    ottawa1_lnk = driver.find_element(By.PARTIAL_LINK_TEXT, "Ottawa")
+                    ottawa1_lnk.click()
+                    time.sleep(5)
+                    ottawa2_lnk = driver.find_element(By.LINK_TEXT, "Ottawa")
+                    ottawa2_lnk.click()
+                    time.sleep(5)
+                    go_btn = driver.find_element(By.ID,"LocUpdate")
+                    go_btn.click()
+            except:
+                pass   
             time.sleep(randint(1,5))
             chkboxs = driver.find_elements(By.TAG_NAME,"label")
             for chkbox in chkboxs:
@@ -141,13 +145,16 @@ class WebBot:
             img_fields = driver.find_elements(By.TAG_NAME, "input")
             for img_field in img_fields:
                 if img_field.get_attribute('type') == "file":
-                    img_field.send_keys(r"D:\WhatsApp Image 2023-03-07 at 10.17.38 AM (1).jpeg")
+                    for img in os.listdir(r"./Pics/"):
+                        img_field.send_keys(os.getcwd()+r"/Pics/"+img)
 
             time.sleep(randint(1,5))
             location = driver.find_element(By.ID, "location")
             location.send_keys(data_stuff.ZIP)
-            location.send_keys(Keys.ENTER)
-
+            time.sleep(5)
+            location.send_keys(Keys.DOWN)
+            time.sleep(5)
+            location.send_keys(Keys.ENTER)           
 
             time.sleep(randint(1,5))
             price_field = driver.find_element(By.ID, "PriceAmount")
